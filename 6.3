@@ -1,0 +1,177 @@
+#include<iostream>
+#include<fstream>
+using namespace std;
+ifstream read("input.txt"); 
+static int leaves = 0;
+template <class T>
+class BinaryTreeNode {
+public:
+	//BinaryTreeNode() { LeftChild = RightChild = 0; }
+	BinaryTreeNode(const T& e) 
+	{
+		data = e;	LeftChild = 0, RightChild =0;
+	}
+	T data;
+	BinaryTreeNode<T>* LeftChild;  // left subtree
+	BinaryTreeNode<T>* RightChild;  // right subtree
+};
+template<class T>
+class NodeQueue{
+public:
+	NodeQueue() {
+		front = rear =-1;
+	}
+	int Size() {
+		int count = 0;
+		int sfront = front;
+		int srear = rear;
+		while (sfront != srear)
+		{
+			count++;
+			sfront++;
+		}
+		return count;
+	}
+	BinaryTreeNode<T>*data[100];
+	int front;
+	int rear;
+};
+template<class T>
+class BinaryTree {
+public:
+	BinaryTree() { root = PreCreate(root); }
+	void PreOrder()
+	{
+		PreOrder(root);
+	}
+	void sPreOrder()
+	{
+		sPreOrder(root);
+	}
+	int Tleaves();
+	void SwapTrees();
+	void LevelOrder();
+	int Treewidth() {
+		if (root == 0)
+			return 0;
+		int lastwidth= 0;
+		int curwidth = 0;
+		NodeQueue<T>q;                                   //创建队列。
+		q.data[++q.rear] = root;                         //根指针入队。
+		int treewidth = 1;
+		lastwidth = 1;
+		while (q.front != q.rear)
+		{
+			while (lastwidth != 0)
+			{
+				BinaryTreeNode<T>* t = q.data[++q.front];   //出队(先加后操作)
+				if (t->LeftChild != 0)
+					q.data[++q.rear] = t->LeftChild;
+				if (t->RightChild != 0)
+					q.data[++q.rear] = t->RightChild;
+				lastwidth--;
+			}
+			curwidth = q.Size();
+			treewidth = curwidth > treewidth ? curwidth : treewidth;
+			lastwidth = curwidth;
+		}
+		return treewidth;
+	}
+	private:
+	BinaryTreeNode<T>* root;
+	BinaryTreeNode<T>* PreCreate(BinaryTreeNode<T>*bt);
+	void PreOrder(BinaryTreeNode<T>*bt);
+	void sPreOrder(BinaryTreeNode<T>* bt);
+
+};
+template<class T>
+BinaryTreeNode<T>* BinaryTree<T>::PreCreate(BinaryTreeNode<T>* bt) //前序遍历输入
+{
+	if (read.eof())           
+		return bt;
+	char a;
+	read >> a;
+	if (a == '#'||a<'0'||a>'9')
+		bt = 0;
+	else { //create;
+		bt = new BinaryTreeNode<T>(a);
+		bt->LeftChild = PreCreate(bt->LeftChild);
+		bt->RightChild = PreCreate(bt->RightChild);
+		    
+	}
+	return bt;
+}
+template<class T>
+void BinaryTree<T>::PreOrder(BinaryTreeNode<T>* bt)
+{
+	if (bt == 0)
+		return;  
+	cout << bt->data << " ";
+	if (bt->LeftChild == 0 && bt->RightChild == 0)
+	{
+		leaves++;
+	}
+	PreOrder(bt->LeftChild);
+	PreOrder(bt->RightChild);
+}
+template<class T>
+void BinaryTree<T>::sPreOrder(BinaryTreeNode<T>* bt)
+{
+	BinaryTreeNode<T>* templ, *tempr;
+	if (bt == 0)
+		return;
+	templ = bt->LeftChild;
+	tempr = bt->RightChild;
+	bt->LeftChild = tempr;
+	bt->RightChild = templ;
+	sPreOrder(bt->LeftChild);
+	sPreOrder(bt->RightChild);
+}
+template<class T>
+int BinaryTree<T>::Tleaves()
+{
+	return leaves;
+}
+template<class T>
+void BinaryTree<T>::LevelOrder()
+{
+	if (root==0)
+	{
+		cout << "Empty Tree !\n";
+		return;	
+	}
+
+	NodeQueue<T>q;  //创建队列。
+	q.data[++q.rear] = root;                         //根指针入队。
+	while (q.front!=q.rear)
+	{
+		BinaryTreeNode<T>* t = q.data[++q.front];   //出队
+		cout <<t->data<<" ";
+		if (t->LeftChild != 0)
+		{
+			q.data[++q.rear] = t->LeftChild;
+		}
+		if (t->RightChild != 0)
+		{
+			q.data[++q.rear] = t->RightChild;
+		}
+	}
+}
+template<class T>
+void BinaryTree<T>::SwapTrees()
+{
+	sPreOrder(root);
+}
+
+int main()
+{  //遍历文件输入。 
+	BinaryTree<char>*btree=new BinaryTree<char>();
+	btree->PreOrder();
+	cout << endl;
+	btree->LevelOrder();
+	cout << "\nNumbers of leaves: "<<btree->Tleaves();
+	cout << "\nTreeWidth: " << btree->Treewidth();
+	cout << endl;
+	btree->SwapTrees();
+	btree->LevelOrder();
+}
